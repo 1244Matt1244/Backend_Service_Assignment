@@ -4,9 +4,9 @@ services:
     ports:
       - "8080:8080"
     environment:
-      DB_USER: postgres
-      DB_PASSWORD: Prague1993
-      DB_NAME: postgres
+      DB_USER: username
+      DB_PASSWORD: pasword
+      DB_NAME: username
       DB_HOST: db
       DB_PORT: 5432
     depends_on:
@@ -15,9 +15,9 @@ services:
   db:
     image: postgres:13
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Prague1993
-      POSTGRES_DB: postgres
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: pasword
+      POSTGRES_DB: username
     ports:
       - "5432:5432"
     volumes:
