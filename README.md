@@ -1,6 +1,6 @@
 ## Project Overview
 
-This application is a solution for an assignment given by Collective Mind development d.o.o. The goal is to create a backend service using the Go language and a PostgreSQL database to manage Magic The Gathering cards and traffic camera locations.
+This application is a solution for an assignment. The goal is to create a backend service using the Go language and a PostgreSQL database to manage Magic The Gathering cards and traffic camera locations.
 
 ## Requirements
 
@@ -13,7 +13,7 @@ This application is a solution for an assignment given by Collective Mind develo
 
 1. Clone the repository from GitHub:
    ```sh
-   git clone https://github.com/YourUsername/CollectiveMindAssignment.git
+   git clone https://github.com/1244Matt1244/Dev-Assignment.git
    ```
 2. Install the necessary dependencies:
    ```sh
