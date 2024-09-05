@@ -2,8 +2,7 @@
 package camera
 
 import (
-	"fmt"
-	"myapp/db" // Import your db package
+	"myapp/internal/db"
 )
 
 func FetchCameras() ([]Camera, error) {
