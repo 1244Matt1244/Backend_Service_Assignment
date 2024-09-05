@@ -2,68 +2,72 @@
 package main
 
 import (
+	"encoding/csv"
+	"encoding/json"
+	"log"
 	"net/http"
-	"strconv"
 )
-
-// ListMTGCardsHandler handles the request to list all MTG cards
-func ListMTGCardsHandler(w http.ResponseWriter, r *http.Request) {
-	// Implement the logic to list MTG cards
-}
-
-// GetMTGCardHandler handles the request to get a single MTG card by ID
-func GetMTGCardHandler(w http.ResponseWriter, r *http.Request) {
-	// Implement the logic to get a single MTG card by ID
-}
 
 // ImportMTGCardsHandler handles the request to import MTG cards
 func ImportMTGCardsHandler(w http.ResponseWriter, r *http.Request) {
-	// Implement the logic to import MTG cards
-}
-
-// ListCamerasHandler handles the request to list all cameras
-func ListCamerasHandler(w http.ResponseWriter, r *http.Request) {
-	// Implement the logic to list all cameras
-}
-
-// GetCameraByIDHandler handles the request to get a single camera by ID
-func GetCameraByIDHandler(w http.ResponseWriter, r *http.Request) {
-	// Implement the logic to get a single camera by ID
-}
-
-// AddCameraHandler handles the request to add a new camera
-func AddCameraHandler(w http.ResponseWriter, r *http.Request) {
-	// Implement the logic to add a new camera
-}
-
-// DeleteCameraHandler handles the request to delete a camera by ID
-func DeleteCameraHandler(w http.ResponseWriter, r *http.Request) {
-	// Implement the logic to delete a camera by ID
-}
-
-// ListCamerasInRadiusHandler handles the request to list cameras within a certain radius
-func ListCamerasInRadiusHandler(w http.ResponseWriter, r *http.Request) {
-	// Implement the logic to list cameras within a certain radius
-}
-
-// ListCards handles pagination and filters
-func ListCards(w http.ResponseWriter, r *http.Request) {
-	page, err := strconv.Atoi(r.URL.Query().Get("page"))
-	if err != nil || page <= 0 {
-		http.Error(w, "Invalid page number", http.StatusBadRequest)
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	color := r.URL.Query().Get("color")
-	if color != "" && !isValidColor(color) {
-		http.Error(w, "Invalid color", http.StatusBadRequest)
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, "Unable to get file from form", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	if err != nil {
+		http.Error(w, "Unable to read CSV file", http.StatusInternalServerError)
 		return
 	}
 
-	// Continue processing the request...
+	for _, record := range records {
+		if len(record) == 5 {
+			card := MTGCard{
+				ID:          record[0],
+				Name:        record[1],
+				ManaCost:    record[2],
+				Type:        record[3],
+				Description: record[4],
+			}
+			log.Printf("Processing card: %+v", card)
+			// Process card (e.g., save to database)
+		}
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Import successful"))
 }
 
-func isValidColor(color string) bool {
-	validColors := map[string]bool{"white": true, "black": true, "blue": true, "red": true, "green": true}
-	return validColors[color]
+// ImportCamerasHandler handles the request to import traffic cameras
+func ImportCamerasHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var cameras []Camera
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&cameras)
+	if err != nil {
+		http.Error(w, "Unable to decode JSON", http.StatusBadRequest)
+		return
+	}
+
+	for _, camera := range cameras {
+		log.Printf("Processing camera: ID=%d, Location=%s, URL=%s",
+			camera.ID, camera.Location, camera.URL)
+		// Process camera (e.g., save to database)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Cameras import successful"))
 }

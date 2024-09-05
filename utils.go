@@ -1,5 +1,4 @@
-// utils.go
-package utils
+package main
 
 import "log"
 

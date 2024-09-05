@@ -1,5 +1,5 @@
 // routes.go
-package routes
+package main
 
 import (
 	"encoding/json"
