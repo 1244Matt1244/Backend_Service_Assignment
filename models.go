@@ -1,5 +1,5 @@
 // models.go
-package main
+package models
 
 // MTGCard represents a card from the MTG API
 type MTGCard struct {

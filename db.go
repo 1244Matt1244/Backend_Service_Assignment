@@ -4,24 +4,19 @@ package db
 import (
 	"database/sql"
 	"fmt"
-
-	_ "github.com/lib/pq"
 )
 
 var dbInstance *sql.DB
 
-// ConnectDB - Initializes a single DB connection instance
-func ConnectDB() (*sql.DB, error) {
-	if dbInstance != nil {
-		return dbInstance, nil
+// GetDBConnection returns a singleton instance of the database connection
+func GetDBConnection() (*sql.DB, error) {
+	if dbInstance == nil {
+		connStr := "user=your_user dbname=your_db sslmode=disable"
+		db, err := sql.Open("postgres", connStr)
+		if err != nil {
+			return nil, fmt.Errorf("failed to connect to db: %v", err)
+		}
+		dbInstance = db
 	}
-
-	connStr := "user=postgres dbname=postgres sslmode=disable"
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		return nil, fmt.Errorf("could not connect to db: %v", err)
-	}
-
-	dbInstance = db
-	return db, nil
+	return dbInstance, nil
 }

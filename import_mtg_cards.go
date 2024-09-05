@@ -1,4 +1,5 @@
-package main
+// import_mtg_cards.go
+package mtg
 
 import (
 	"database/sql"

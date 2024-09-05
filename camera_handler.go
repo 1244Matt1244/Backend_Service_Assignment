@@ -1,16 +1,20 @@
-package main
+// camera_handler.go
+package camera
 
 import (
-	"encoding/json"
-	"net/http"
+	"fmt"
+	"myapp/db" // Import your db package
 )
 
-// ListCameras handles the HTTP request to list cameras
-func ListCameras(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, location, url FROM traffic_cameras")
+func FetchCameras() ([]Camera, error) {
+	conn, err := db.GetDBConnection() // Reuse the singleton connection
 	if err != nil {
-		http.Error(w, "Error fetching traffic cameras", http.StatusInternalServerError)
-		return
+		return nil, fmt.Errorf("could not connect to db: %v", err)
+	}
+
+	rows, err := conn.Query("SELECT * FROM traffic_cameras")
+	if err != nil {
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -18,10 +22,10 @@ func ListCameras(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var camera Camera
 		if err := rows.Scan(&camera.ID, &camera.Location, &camera.URL); err != nil {
-			http.Error(w, "Error scanning camera", http.StatusInternalServerError)
-			return
+			return nil, err
 		}
 		cameras = append(cameras, camera)
 	}
-	json.NewEncoder(w).Encode(cameras)
+
+	return cameras, nil
 }

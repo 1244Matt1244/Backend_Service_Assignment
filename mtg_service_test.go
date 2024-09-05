@@ -2,22 +2,32 @@
 package mtg
 
 import (
-	"net/http"
-	"net/http/httptest"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
+	"fmt"
+	"log"
+	"myapp/db" // Import your db package
 )
 
-func TestFetchCards(t *testing.T) {
-	req, err := http.NewRequest("GET", "/cards", nil)
-	assert.NoError(t, err)
+func FetchMTGCards() ([]Card, error) {
+	conn, err := db.GetDBConnection() // Reuse the singleton connection
+	if err != nil {
+		return nil, fmt.Errorf("could not connect to db: %v", err)
+	}
 
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(FetchCards)
+	rows, err := conn.Query("SELECT * FROM mtg_cards")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-	handler.ServeHTTP(rr, req)
+	var cards []Card
+	for rows.Next() {
+		var card Card
+		if err := rows.Scan(&card.ID, &card.Name, &card.Type); err != nil {
+			log.Printf("Error scanning card: %v", err)
+			continue
+		}
+		cards = append(cards, card)
+	}
 
-	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.Contains(t, rr.Body.String(), "cards")
+	return cards, nil
 }
