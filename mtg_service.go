@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"net/http"
 )
 
 // ImportMTGCards fetches MTG card data and inserts it into the database
@@ -18,12 +20,29 @@ func ImportMTGCards() {
 	}
 }
 
-// FetchMTGCards fetches MTG card data (dummy implementation)
-func FetchMTGCards() ([]MTGCard, error) {
-	// This is a dummy implementation
-	return []MTGCard{}, nil
-}
+// FetchCardsFromAPI fetches cards from the MTG API and stores them in the database
+func FetchCardsFromAPI() error {
+	resp, err := http.Get("https://api.magicthegathering.io/v1/cards")
+	if err != nil {
+			log.Printf("Error while calling MTG API: %v", err)
+			return fmt.Errorf("failed to fetch cards from MTG API")
+	}
+	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("unexpected response from MTG API: %d", resp.StatusCode)
+	}
+
+	// Process the response (store data in DB)
+	// Handle DB errors
+	err = StoreCardsInDB(cards)
+	if err != nil {
+			log.Printf("Database error: %v", err)
+			return fmt.Errorf("failed to store cards in the database")
+	}
+
+	return nil
+}
 // InsertMTGCard inserts an MTG card into the database (dummy implementation)
 func InsertMTGCard(card MTGCard) error {
 	_, err := db.Exec("INSERT INTO mtg_cards (id, name, mana_cost, type, description) VALUES ($1, $2, $3, $4, $5)",
