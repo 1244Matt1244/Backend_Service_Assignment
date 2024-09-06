@@ -1,27 +1,37 @@
-Here's an updated `README.md` for your project:
+The repository you shared seems to align well with the assignment tasks. Here’s a new `README.md` based on the files present in your repository:
 
 ```markdown
 # MTG Backend Service Assignment
 
 ## Overview
 
-This project is a Go-based backend service designed to manage Magic: The Gathering (MTG) cards and camera data. It includes functionalities to retrieve card details and camera information, and to interact with these data sources via HTTP endpoints.
+This Go-based backend service is designed to manage Magic: The Gathering (MTG) cards and camera data. The project includes functionalities to interact with these data sources through various services and HTTP endpoints.
 
 ## Project Structure
 
 ```
-myproject/
-├── card.go                # Contains the Card struct and GetCardByID function
-├── main.go                # Main application entry point, sets up HTTP server and routes
-├── mtg_service.go         # Contains MTG card service functionality
-├── mtg_service_test.go    # Contains tests for MTG card service functionality
-├── fetch_cards.go         # Fetches MTG cards from an external API
-├── mtg_cards.csv          # CSV file containing MTG card data
-├── README.md              # This file
-├── go.mod                 # Go module definition
-├── go.sum                 # Go module checksums
-├── Dockerfile             # Dockerfile for containerizing the application
-├── docker-compose.yml     # Docker Compose file for multi-container setups
+myapp/
+├── camera.go               # Defines the Camera struct
+├── camera_handler.go       # Handles HTTP requests for cameras
+├── camera_service.go       # Contains logic for camera operations
+├── camera_service_test.go  # Tests for camera service functionality
+├── db.go                   # Contains database-related code
+├── fetch_cards.go          # Fetches MTG cards from an external API
+├── handlers.go             # HTTP request handlers
+├── main.go                 # Main application entry point
+├── models.go               # Defines application models
+├── mtg_cards.csv           # CSV file containing MTG card data
+├── mtg_service.go          # Contains MTG card service functionality
+├── mtg_service_test.go     # Tests for MTG card service functionality
+├── routes.go               # Defines application routes
+├── test.go                 # Contains additional tests
+├── utils.go                # Utility functions
+├── Dockerfile              # Dockerfile for containerizing the application
+├── docker-compose.yml      # Docker Compose file for multi-container setups
+├── go.mod                  # Go module definition
+├── go.sum                  # Go module checksums
+├── import.sh               # (Not used in the current setup)
+└── README.md               # This file
 ```
 
 ## Dependencies
@@ -34,8 +44,8 @@ myproject/
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/your-username/mtg-backend-service.git
-   cd mtg-backend-service
+   git clone https://github.com/1244Matt1244/Dev-Assignment.git
+   cd Dev-Assignment
    ```
 
 2. **Install Dependencies**
@@ -47,13 +57,13 @@ myproject/
 3. **Build the Application**
 
    ```bash
-   go build -o myapp.exe
+   go build -o myapp
    ```
 
 4. **Run the Application**
 
    ```bash
-   ./myproject.exe
+   ./myapp
    ```
 
 ## API Endpoints
@@ -71,13 +81,22 @@ go test ./...
 
 ## File Descriptions
 
-- **card.go**: Defines the `Card` struct and the `GetCardByID` function.
-- **main.go**: Sets up the HTTP server and routes.
-- **mtg_service.go**: Contains service functions related to MTG cards.
-- **mtg_service_test.go**: Tests for the MTG service functions.
-- **fetch_cards.go**: Fetches card data from an external API.
-- **mtg_cards.csv**: Contains card data for local testing.
-- **Dockerfile**: Defines how to build the Docker image for the application.
+- **camera.go**: Defines the `Camera` struct used in the application.
+- **camera_handler.go**: Handles HTTP requests related to cameras.
+- **camera_service.go**: Contains logic for camera operations and service functions.
+- **camera_service_test.go**: Tests for camera-related services.
+- **db.go**: Includes database-related code for data management.
+- **fetch_cards.go**: Contains logic for fetching MTG card data from an external API.
+- **handlers.go**: Contains HTTP request handlers for various endpoints.
+- **main.go**: The main entry point for the application, sets up the HTTP server and routes.
+- **models.go**: Defines application models used throughout the code.
+- **mtg_cards.csv**: CSV file with MTG card data for local testing.
+- **mtg_service.go**: Contains MTG card service functionality.
+- **mtg_service_test.go**: Tests for MTG card services.
+- **routes.go**: Defines application routes and their handlers.
+- **test.go**: Contains additional tests for various functionalities.
+- **utils.go**: Utility functions used in the application.
+- **Dockerfile**: Defines how to build a Docker image for the application.
 - **docker-compose.yml**: Defines services and configurations for Docker Compose.
 
 ## Contributing
@@ -88,3 +107,5 @@ Feel free to open issues or submit pull requests to improve the project.
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 ```
+
+This `README.md` provides a detailed overview of your project, its structure, and instructions on how to set it up and run it. Adjust any details as needed based on your specific project requirements!
