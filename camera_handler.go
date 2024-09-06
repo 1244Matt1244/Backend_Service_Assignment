@@ -1,45 +1,32 @@
-// camera_handler.go
+package camera
+
 import (
 	"database/sql"
-	"fmt"
-	"myapp/internal/db"
+	"encoding/json"
+	"net/http"
+
+	_ "github.com/lib/pq" // PostgreSQL driver import
 )
 
-// Define the Camera struct to represent a camera entity.
-type Camera struct {
-	ID       int    // Assuming ID is an integer, adjust the type as needed.
-	Location string // Assuming Location is a string, adjust the type as needed.
-	URL      string // Assuming URL is a string, adjust the type as needed.
-}
+// Camera struct should not be redeclared here, just use the one from camera.go
 
-func FetchCameras() ([]Camera, error) {
-	// Get the database connection.
-	conn, err := db.GetDBConnection()
-	if err != nil {
-		return nil, fmt.Errorf("could not connect to db: %v", err)
-	}
-	defer conn.Close() // Close the connection after the function returns.
-
-	// Query the database for all cameras.
-	rows, err := conn.Query("SELECT * FROM traffic_cameras")
+// FetchCameras queries the database to retrieve all cameras
+func FetchCameras(conn *sql.DB) ([]Camera, error) {
+	rows, err := conn.Query("SELECT id, latitude, longitude FROM traffic_cameras")
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close() // Close the result set after the function returns.
+	defer rows.Close()
 
-	// Create a slice to hold the cameras.
 	var cameras []Camera
-
-	// Scan the rows and append to the cameras slice.
 	for rows.Next() {
 		var camera Camera
-		if err := rows.Scan(&camera.ID, &camera.Location, &camera.URL); err != nil {
+		if err := rows.Scan(&camera.ID, &camera.Latitude, &camera.Longitude); err != nil {
 			return nil, err
 		}
 		cameras = append(cameras, camera)
 	}
 
-	// Check for any errors that occurred during the iteration.
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -47,3 +34,24 @@ func FetchCameras() ([]Camera, error) {
 	return cameras, nil
 }
 
+// CameraHandler handles HTTP requests for cameras
+func CameraHandler(w http.ResponseWriter, r *http.Request) {
+	connStr := "user=username dbname=yourdb sslmode=disable" // Example connection string
+	dbConn, err := sql.Open("postgres", connStr)
+	if err != nil {
+		http.Error(w, "Database connection error", http.StatusInternalServerError)
+		return
+	}
+	defer dbConn.Close()
+
+	cameras, err := FetchCameras(dbConn)
+	if err != nil {
+		http.Error(w, "Could not fetch cameras", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(cameras); err != nil {
+		http.Error(w, "Error encoding JSON", http.StatusInternalServerError)
+	}
+}

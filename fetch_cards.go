@@ -6,11 +6,6 @@ import (
 	"net/http"
 )
 
-type Card struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
 func FetchCardsFromAPI(url string) error {
 	resp, err := http.Get(url)
 	if err != nil {
@@ -23,7 +18,7 @@ func FetchCardsFromAPI(url string) error {
 	}
 
 	var result struct {
-		Cards []Card `json:"cards"`
+		Cards []Card `json:"cards"` // Use the imported Card struct
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return err

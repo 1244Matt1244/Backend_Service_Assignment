@@ -1,4 +1,3 @@
-// test.go
 package mtg
 
 import (
@@ -10,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Mock HTTP response for better test coverage
+// Test to mock FetchCardsFromAPI function
 func TestFetchCardsFromAPIMock(t *testing.T) {
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

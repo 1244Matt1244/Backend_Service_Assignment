@@ -1,18 +1,17 @@
-// models.go
 package main
 
 // MTGCard represents a card from the MTG API
 type MTGCard struct {
-	ID          int    `json:"id"`
+	ID          string `json:"id"`
 	Name        string `json:"name"`
 	ManaCost    string `json:"mana_cost"`
-	Type        string `json:"type"`
+	Type        string `json:"type"` // Ensure the Type field exists
 	Description string `json:"description"`
 }
 
 // Camera represents a traffic camera
 type Camera struct {
-	ID       int    `json:"id"`
-	Location string `json:"location"`
-	URL      string `json:"url"`
+	ID        string  `json:"id"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
 }

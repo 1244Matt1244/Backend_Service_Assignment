@@ -1,153 +1,90 @@
-Certainly! Here’s a sample `README.md` for your project. This `README.md` provides an overview of the project, how to set it up, and details about the available endpoints and their usage.
+Here's an updated `README.md` for your project:
 
 ```markdown
-# MTG Backend Service
+# MTG Backend Service Assignment
 
-This is a backend service for managing Magic: The Gathering (MTG) cards and traffic cameras. It provides endpoints to list, retrieve, import, and manage MTG cards, as well as to handle traffic camera data.
+## Overview
 
-## Features
+This project is a Go-based backend service designed to manage Magic: The Gathering (MTG) cards and camera data. It includes functionalities to retrieve card details and camera information, and to interact with these data sources via HTTP endpoints.
 
-- **MTG Cards Management:**
-  - List all MTG cards
-  - Get details of a specific MTG card by ID
-  - Import MTG cards from an external API
+## Project Structure
 
-- **Traffic Cameras Management:**
-  - List all traffic cameras
-  - Get details of a specific traffic camera by ID
-  - Add a new traffic camera
-  - Delete a traffic camera
-
-## Requirements
-
-- Go 1.18 or higher
-- PostgreSQL database
-
-## Getting Started
-
-### 1. Setup the Database
-
-Make sure you have PostgreSQL installed and set up a database. You will need to create the following tables in your database:
-
-#### MTG Cards Table
-
-```sql
-CREATE TABLE mtg_cards (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    mana_cost VARCHAR(255),
-    type VARCHAR(255),
-    description TEXT,
-    UNIQUE (id)
-);
+```
+myproject/
+├── card.go                # Contains the Card struct and GetCardByID function
+├── main.go                # Main application entry point, sets up HTTP server and routes
+├── mtg_service.go         # Contains MTG card service functionality
+├── mtg_service_test.go    # Contains tests for MTG card service functionality
+├── fetch_cards.go         # Fetches MTG cards from an external API
+├── mtg_cards.csv          # CSV file containing MTG card data
+├── README.md              # This file
+├── go.mod                 # Go module definition
+├── go.sum                 # Go module checksums
+├── Dockerfile             # Dockerfile for containerizing the application
+├── docker-compose.yml     # Docker Compose file for multi-container setups
 ```
 
-#### Traffic Cameras Table
+## Dependencies
 
-```sql
-CREATE TABLE traffic_cameras (
-    id SERIAL PRIMARY KEY,
-    location VARCHAR(255),
-    url VARCHAR(255)
-);
-```
+- `github.com/gorilla/mux`: Router for handling HTTP routes.
+- `github.com/stretchr/testify`: Library for testing assertions.
 
-### 2. Configure Environment Variables
+## Setup and Installation
 
-Set up the environment variables for database connection in your `.env` file or export them directly in your shell:
+1. **Clone the Repository**
 
-```bash
-export DB_USER="your_db_user"
-export DB_PASSWORD="your_db_password"
-export DB_NAME="your_db_name"
-export DB_HOST="localhost"
-export DB_PORT="5432"
-```
+   ```bash
+   git clone https://github.com/your-username/mtg-backend-service.git
+   cd mtg-backend-service
+   ```
 
-### 3. Run the Application
+2. **Install Dependencies**
 
-Clone the repository and navigate to the project directory:
+   ```bash
+   go mod tidy
+   ```
 
-```bash
-git clone https://github.com/yourusername/mtg-backend-service.git
-cd mtg-backend-service
-```
+3. **Build the Application**
 
-Install Go dependencies:
+   ```bash
+   go build -o myapp.exe
+   ```
 
-```bash
-go mod tidy
-```
+4. **Run the Application**
 
-Build and run the application:
-
-```bash
-go run main.go
-```
-
-The server will start on port `8080`.
+   ```bash
+   ./myproject.exe
+   ```
 
 ## API Endpoints
 
-### MTG Cards Endpoints
+- **GET /cards/{id}**: Retrieves MTG card details by ID.
+- **GET /cameras/{id}**: Retrieves camera details by ID.
 
-- **List All MTG Cards**
-  - `GET /mtg-cards`
-  - Returns a list of all MTG cards.
+## Testing
 
-- **Get MTG Card by ID**
-  - `GET /mtg-card/{id}`
-  - Returns details of a specific MTG card by ID.
+To run the tests:
 
-- **Import MTG Cards**
-  - `POST /mtg-cards/import`
-  - Imports MTG cards from the Magic: The Gathering API.
+```bash
+go test ./...
+```
 
-### Traffic Cameras Endpoints
+## File Descriptions
 
-- **List All Traffic Cameras**
-  - `GET /cameras`
-  - Returns a list of all traffic cameras.
-
-- **Get Traffic Camera by ID**
-  - `GET /camera?id={id}`
-  - Returns details of a specific traffic camera by ID.
-
-- **Add a New Traffic Camera**
-  - `POST /camera`
-  - Adds a new traffic camera. The request body should be a JSON object with `location` and `url`.
-
-- **Delete a Traffic Camera**
-  - `DELETE /camera?id={id}`
-  - Deletes a specific traffic camera by ID.
-
-## Error Handling
-
-The API returns appropriate HTTP status codes and error messages in case of failures. For example:
-
-- `400 Bad Request` for invalid input or request format.
-- `404 Not Found` for resources not found.
-- `500 Internal Server Error` for server-side issues.
+- **card.go**: Defines the `Card` struct and the `GetCardByID` function.
+- **main.go**: Sets up the HTTP server and routes.
+- **mtg_service.go**: Contains service functions related to MTG cards.
+- **mtg_service_test.go**: Tests for the MTG service functions.
+- **fetch_cards.go**: Fetches card data from an external API.
+- **mtg_cards.csv**: Contains card data for local testing.
+- **Dockerfile**: Defines how to build the Docker image for the application.
+- **docker-compose.yml**: Defines services and configurations for Docker Compose.
 
 ## Contributing
 
-Feel free to open issues or submit pull requests. Contributions are welcome!
+Feel free to open issues or submit pull requests to improve the project.
 
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
-
-### Explanation
-
-- **Project Overview:** Brief description of what the project does.
-- **Features:** Key functionalities provided by the service.
-- **Requirements:** Software and versions needed to run the project.
-- **Getting Started:** Steps to set up and run the application, including database setup and environment variables.
-- **API Endpoints:** Description of available API endpoints for both MTG cards and traffic cameras.
-- **Error Handling:** General information on how errors are handled.
-- **Contributing:** Information on how others can contribute to the project.
-- **License:** Information about the project’s license.
-
-Make sure to replace placeholders like `your_db_user`, `your_db_password`, `your_db_name`, and repository URL with actual values specific to your setup.
+```
