@@ -1,0 +1,25 @@
+version: '3'
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"  # Expose the Go app on port 8080
+    depends_on:
+      - db
+    networks:
+      - my_network
+
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"  # PostgreSQL on port 5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Prague1993
+      POSTGRES_DB: postgres
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    driver: bridge

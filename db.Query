@@ -1,0 +1,11 @@
+query := `
+    SELECT id, location, url
+    FROM traffic_cameras
+    WHERE ST_DWithin(
+        ST_SetSRID(ST_MakePoint($1, $2), 4326),
+        ST_SetSRID(ST_MakePoint(longitude, latitude), 4326),
+        $3
+    );
+`
+
+rows, err := db.Query(query, longitude, latitude, radius)
