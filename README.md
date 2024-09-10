@@ -1,6 +1,3 @@
-The repository you shared seems to align well with the assignment tasks. Here’s a new `README.md` based on the files present in your repository:
-
-```markdown
 # MTG Backend Service Assignment
 
 ## Overview
