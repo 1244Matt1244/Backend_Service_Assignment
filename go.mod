@@ -1,4 +1,4 @@
-module my_project
+module Backend_Service_Assignment/models
 
 go 1.23
 
@@ -11,5 +11,6 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/jmoiron/sqlx v1.4.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 )

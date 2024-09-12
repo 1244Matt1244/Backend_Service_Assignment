@@ -2,14 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"mtg"
 	"net/http"
 	"strconv"
 )
 
 // ListMTGCardsHandler handles the request to list all MTG cards
 func ListMTGCardsHandler(w http.ResponseWriter, r *http.Request) {
-	// Example: Fetch cards from a service and return as JSON
-	cards, err := fetchAllMTGCards() // Replace with actual fetching logic
+	cards, err := mtg.FetchAllMTGCards() // Use the correct function name from your service
 	if err != nil {
 		http.Error(w, "Failed to fetch cards", http.StatusInternalServerError)
 		return
@@ -24,7 +24,7 @@ func ListMTGCardsHandler(w http.ResponseWriter, r *http.Request) {
 // GetMTGCardHandler handles the request to get a single MTG card by ID
 func GetMTGCardHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
-	card, err := getMTGCardByID(id) // Replace with actual fetching logic
+	card, err := mtg.GetMTGCardByID(id) // Use the correct function name from your service
 	if err != nil {
 		http.Error(w, "Card not found", http.StatusNotFound)
 		return
@@ -43,7 +43,7 @@ func ImportMTGCardsHandler(w http.ResponseWriter, r *http.Request) {
 
 // ListCamerasHandler handles the request to list all cameras
 func ListCamerasHandler(w http.ResponseWriter, r *http.Request) {
-	cameras, err := fetchAllCameras() // Replace with actual fetching logic
+	cameras, err := mtg.FetchAllCameras() // Use the correct function name from your service
 	if err != nil {
 		http.Error(w, "Failed to fetch cameras", http.StatusInternalServerError)
 		return
@@ -58,7 +58,7 @@ func ListCamerasHandler(w http.ResponseWriter, r *http.Request) {
 // GetCameraByIDHandler handles the request to get a single camera by ID
 func GetCameraByIDHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
-	camera, err := getCameraByID(id) // Replace with actual fetching logic
+	camera, err := mtg.GetCameraByID(id) // Use the correct function name from your service
 	if err != nil {
 		http.Error(w, "Camera not found", http.StatusNotFound)
 		return
@@ -78,7 +78,7 @@ func AddCameraHandler(w http.ResponseWriter, r *http.Request) {
 // DeleteCameraHandler handles the request to delete a camera by ID
 func DeleteCameraHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
-	err := deleteCameraByID(id) // Replace with actual deletion logic
+	err := mtg.DeleteCameraByID(id) // Use the correct function name from your service
 	if err != nil {
 		http.Error(w, "Failed to delete camera", http.StatusInternalServerError)
 		return
@@ -106,8 +106,7 @@ func ListCards(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Fetch and return the paginated and filtered cards
-	cards, err := fetchFilteredMTGCards(page, color) // Replace with actual fetching logic
+	cards, err := mtg.FetchFilteredMTGCards(page, color) // Use the correct function name from your service
 	if err != nil {
 		http.Error(w, "Failed to fetch cards", http.StatusInternalServerError)
 		return

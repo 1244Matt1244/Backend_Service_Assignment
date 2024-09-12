@@ -1,36 +1,36 @@
-// fetch_cards.go
 package mtg
 
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-	"my_project/models" // C:/Users/korisnik/Desktop/MTG_Backend_Service_Assignment
 	"net/http"
+
+	"github.com/jmoiron/sqlx"
 )
 
-// FetchCardsFromAPI fetches cards from the given API URL and processes them
-func FetchCardsFromAPI(url string) ([]models.Card, error) {
-	resp, err := http.Get(url)
+// FetchCardsFromAPI fetches MTG cards from the API and stores them in the database
+func FetchCardsFromAPI(apiURL string, db *sqlx.DB) error {
+	resp, err := http.Get(apiURL)
 	if err != nil {
-		return nil, fmt.Errorf("error fetching data from API: %v", err)
+		return fmt.Errorf("error fetching cards from API: %v", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	var data struct {
+		Cards []models.Card `json:"cards"` // Ensure 'models.Card' is the correct type
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		return fmt.Errorf("error decoding API response: %v", err)
 	}
 
-	var result struct {
-		Cards []models.Card `json:"cards"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("error decoding JSON response: %v", err)
-	}
-
-	for _, card := range result.Cards {
-		log.Printf("Card ID: %s, Name: %s", card.ID, card.Name)
+	for _, card := range data.Cards {
+		_, err := db.NamedExec(`INSERT INTO mtg_cards (id, name, colors, cmc, type, subtype, rarity, image_url, original_text) 
+		VALUES (:id, :name, :colors, :cmc, :type, :subtype, :rarity, :image_url, :original_text)
+		ON CONFLICT (id) DO NOTHING`, card)
+		if err != nil {
+			return fmt.Errorf("error inserting card into database: %v", err)
+		}
 	}
 
-	return result.Cards, nil
+	return nil
 }

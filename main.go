@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"math"
-	"my_project/models"
-	"my_project/mtg"
+	"models"
+	"mtg"
 	"net/http"
 	"strconv"
 
@@ -36,11 +36,10 @@ func main() {
 }
 
 // SetupRouter sets up routes for MTG cards and cameras
-func SetupRouter(cards []models.Card, cameras []models.Camera) *mux.Router {
+func SetupRouter(cards []models.Go, cameras []models.Go) *mux.Router {
 	r := mux.NewRouter()
-
 	// MTG Card Routes
-	r.HandleFunc("/cards/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/cards/{id}", func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id := vars["id"]
 
@@ -54,7 +53,7 @@ func SetupRouter(cards []models.Card, cameras []models.Camera) *mux.Router {
 	}).Methods("GET")
 
 	// Camera Routes
-	r.HandleFunc("/cameras/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/cameras/{id}", func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id := vars["id"]
 
@@ -103,7 +102,11 @@ func SetupRouter(cards []models.Card, cameras []models.Camera) *mux.Router {
 			}
 		}
 
-		JSONResponse(w, results, http.StatusOK)
+		JSONResponse(w, map[string]interface{}{
+			"total": len(results),
+			"items": len(results),
+			"cards": results,
+		}, http.StatusOK)
 	}).Methods("GET")
 
 	return r
@@ -112,10 +115,10 @@ func SetupRouter(cards []models.Card, cameras []models.Camera) *mux.Router {
 // Calculate the distance between two points on the earth (specified in decimal degrees)
 func calculateDistance(lat1, lon1, lat2, lon2 float64) float64 {
 	const R = 6371 // Radius of the Earth in kilometers
-	dLat := (lat2 - lat1) * (3.141592653589793 / 180)
-	dLon := (lon2 - lon1) * (3.141592653589793 / 180)
+	dLat := (lat2 - lat1) * (math.Pi / 180)
+	dLon := (lon2 - lon1) * (math.Pi / 180)
 	a := math.Sin(dLat/2)*math.Sin(dLat/2) +
-		math.Cos(lat1*(3.141592653589793/180))*math.Cos(lat2*(3.141592653589793/180))*
+		math.Cos(lat1*(math.Pi/180))*math.Cos(lat2*(math.Pi/180))*
 			math.Sin(dLon/2)*math.Sin(dLon/2)
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 	return R * c

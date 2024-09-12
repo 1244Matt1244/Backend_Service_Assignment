@@ -1,7 +1,6 @@
 package mtg
 
 import (
-	"my_project/models" // C:/Users/korisnik/Desktop/MTG_Backend_Service_Assignment
 	"os"
 	"testing"
 )
@@ -37,7 +36,7 @@ func TestParseMTGCards(t *testing.T) {
 }
 
 func TestGetCardByID(t *testing.T) {
-	cards := []models.MTGCard{
+	cards := []models.go{
 		{ID: "1", Name: "Card One", Colors: []string{"red"}, CMC: 1, Type: []string{"Creature"}, Subtype: []string{"Human"}, Rarity: "Common", OriginalText: "A powerful creature", ImageURL: "http://example.com/image1"},
 		{ID: "2", Name: "Card Two", Colors: []string{"green"}, CMC: 2, Type: []string{"Enchantment"}, Subtype: []string{"Forest"}, Rarity: "Uncommon", OriginalText: "An enchantment card", ImageURL: "http://example.com/image2"},
 	}

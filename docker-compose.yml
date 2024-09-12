@@ -1,25 +1,22 @@
-version: '3'
+version: '3.8'
 services:
-  app:
-    build: .
-    ports:
-      - "8080:8080"  # Expose the Go app on port 8080
-    depends_on:
-      - db
-    networks:
-      - my_network
-
   db:
-    image: postgres
-    ports:
-      - "5432:5432"  # PostgreSQL on port 5432
+    image: postgres:14
     environment:
+      POSTGRES_DB: mydb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: Prague1993
-      POSTGRES_DB: postgres
-    networks:
-      - my_network
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
-networks:
-  my_network:
-    driver: bridge
+  app:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgres://postgres:Prague1993@db:5432/mydb
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
