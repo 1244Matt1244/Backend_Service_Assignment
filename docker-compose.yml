@@ -14,7 +14,7 @@ services:
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgres://-:-@db:5432/mydb
+      DATABASE_URL: username://username:password@db:5432/mydb
     ports:
       - "8080:8080"
 
