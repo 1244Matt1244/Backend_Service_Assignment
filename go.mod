@@ -1,4 +1,4 @@
-module Backend_Service_Assignment/models
+module github.com/1244Matt1244/Backend_Service_Assignment
 
 go 1.23
 

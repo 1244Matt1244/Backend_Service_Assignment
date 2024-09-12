@@ -1,109 +1,129 @@
-# MTG Backend Service Assignment
+# Backend Service Assignment
 
-## Overview
-
-This Go-based backend service is designed to manage Magic: The Gathering (MTG) cards and camera data. The project includes functionalities to interact with these data sources through various services and HTTP endpoints.
+This project is a backend service for handling Magic: The Gathering (MTG) cards and traffic camera data. It includes endpoints to fetch data from APIs, manage a PostgreSQL database, and interact with the data.
 
 ## Project Structure
 
 ```
-myapp/
-├── camera.go               # Defines the Camera struct
-├── camera_handler.go       # Handles HTTP requests for cameras
-├── camera_service.go       # Contains logic for camera operations
-├── camera_service_test.go  # Tests for camera service functionality
-├── cameras.csv             # CSV file containing camera data
-├── db.go                   # Contains database-related code
-├── fetch_cards.go          # Fetches MTG cards from an external API
-├── handlers.go             # HTTP request handlers
-├── main.go                 # Main application entry point
-├── models.go               # Defines application models
-├── mtg_cards.csv           # CSV file containing MTG card data
-├── mtg_service.go          # Contains MTG card service functionality
-├── mtg_service_test.go     # Tests for MTG card service functionality
-├── routes.go               # Defines application routes
-├── test.go                 # Contains additional tests
-├── utils.go                # Utility functions
-├── Dockerfile              # Dockerfile for containerizing the application
-├── docker-compose.yml      # Docker Compose file for multi-container setups
-├── go.mod                  # Go module definition
-├── go.sum                  # Go module checksums
-└── README.md               # This file
+Backend_Service_Assignment/
+├── cmd/
+│   └── main.go           # Entry point
+├── internal/
+│   ├── camera/
+│   │   ├── camera_handler.go
+│   │   ├── camera_service.go
+│   │   ├── camera_service_test.go
+│   │   └── cameras.csv
+│   ├── mtg/
+│   │   ├── fetch_cards.go
+│   │   ├── mtg_service_test.go
+│   │   └── mtg_cards.csv
+│   ├── db/
+│   │   ├── db.go
+│   │   └── db_query.go
+│   └── utils/
+│       └── utils.go
+├── configs/
+│   ├── docker-compose.yml
+│   └── Dockerfile
+├── routes/
+│   └── routes.go
+├── tests/
+│   └── test.go
+├── go.mod
+├── go.sum
+├── README.md
+└── .gitignore
 ```
 
-## Dependencies
+## Features
 
-- `github.com/gorilla/mux`: Router for handling HTTP routes.
-- `github.com/stretchr/testify`: Library for testing assertions.
+- **MTG Cards Management**: Fetch MTG cards from an external API and store them in a PostgreSQL database.
+- **Camera Management**: Insert and retrieve traffic camera data.
+- **PostgreSQL Integration**: Manage all data with PostgreSQL using Docker.
+- **Testing**: Unit tests for service components.
+
+## Prerequisites
+
+- **Go 1.23+**
+- **Docker** & **Docker Compose**
+- **PostgreSQL**
 
 ## Setup and Installation
 
-1. **Clone the Repository**
-
+1. **Clone the Repository**:
    ```bash
    git clone https://github.com/1244Matt1244/Dev-Assignment.git
    cd Dev-Assignment
    ```
 
-2. **Install Dependencies**
+2. **Set up PostgreSQL**: You can either use Docker Compose to set up the database or configure a local PostgreSQL instance.
 
+3. **Environment Variables**: Create a `.env` file with the following content:
+   ```bash
+   DATABASE_URL=postgresql://user:password@localhost:5432/myappdb?sslmode=disable
+   ```
+
+4. **Run Docker Compose**:
+   ```bash
+   docker-compose up
+   ```
+
+5. **Build and Run the Application**:
    ```bash
    go mod tidy
-   ```
-
-3. **Build the Application**
-
-   ```bash
-   go build -o myapp
-   ```
-
-4. **Run the Application**
-
-   ```bash
+   go build -o myapp cmd/main.go
    ./myapp
+   ```
+
+6. **Run Tests**:
+   ```bash
+   go test ./internal/...
    ```
 
 ## API Endpoints
 
-- **GET /cards/{id}**: Retrieves MTG card details by ID.
-- **GET /cameras/{id}**: Retrieves camera details by ID.
+### MTG Cards
 
-## Testing
+- **GET /api/mtg/cards**: Fetch all MTG cards from the database.
+- **POST /api/mtg/cards/fetch**: Fetch cards from the MTG API and store them in the database.
 
-To run the tests:
+### Cameras
 
-```bash
-go test ./...
-```
+- **GET /api/cameras**: Retrieve all traffic cameras.
+- **POST /api/cameras/insert**: Insert camera data from `cameras.csv` into the database.
 
-## File Descriptions
+## Database Schema
 
-- **camera.go**: Defines the `Camera` struct used in the application.
-- **camera_handler.go**: Handles HTTP requests related to cameras.
-- **camera_service.go**: Contains logic for camera operations and service functions.
-- **camera_service_test.go**: Tests for camera-related services.
-- **cameras.csv**: CSV file containing camera data.
-- **db.go**: Includes database-related code for data management.
-- **fetch_cards.go**: Contains logic for fetching MTG card data from an external API.
-- **handlers.go**: Contains HTTP request handlers for various endpoints.
-- **main.go**: The main entry point for the application, sets up the HTTP server and routes.
-- **models.go**: Defines application models used throughout the code.
-- **mtg_cards.csv**: CSV file with MTG card data for local testing.
-- **mtg_service.go**: Contains MTG card service functionality.
-- **mtg_service_test.go**: Tests for MTG card services.
-- **routes.go**: Defines application routes and their handlers.
-- **test.go**: Contains additional tests for various functionalities.
-- **utils.go**: Utility functions used in the application.
-- **Dockerfile**: Defines how to build a Docker image for the application.
-- **docker-compose.yml**: Defines services and configurations for Docker Compose.
+### `mtg_cards`
+| Column        | Type    | Description                  |
+|---------------|---------|------------------------------|
+| `id`          | STRING  | Unique card identifier        |
+| `name`        | STRING  | Name of the card              |
+| `colors`      | STRING  | List of colors associated     |
+| `cmc`         | INT     | Converted mana cost           |
+| `type`        | STRING  | Type of the card              |
+| `subtype`     | STRING  | Subtype of the card           |
+| `rarity`      | STRING  | Rarity of the card            |
+| `original_text`| STRING | Card's original description   |
+| `image_url`   | STRING  | Image URL                     |
 
-## Contributing
+### `cameras`
+| Column        | Type    | Description                  |
+|---------------|---------|------------------------------|
+| `id`          | STRING  | Unique camera identifier      |
+| `name`        | STRING  | Name of the camera            |
+| `latitude`    | FLOAT   | Latitude of the camera        |
+| `longitude`   | FLOAT   | Longitude of the camera       |
 
-Feel free to open issues or submit pull requests to improve the project.
+## Contributions
+
+Contributions are welcome! Please feel free to submit pull requests or open issues.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-```
+This project is licensed under the MIT License.
 
-This version reflects the `cameras.csv` file, ensuring it is properly acknowledged in the project structure and descriptions.
+---
+
+This `README.md` provides clear instructions on setup, running, and testing your project, as well as outlining the features and endpoints.

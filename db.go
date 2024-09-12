@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // Importing the PostgreSQL driver
 )
 
 var db *sql.DB
@@ -15,7 +15,7 @@ var db *sql.DB
 func ConnectDB() error {
 	connStr := os.Getenv("DATABASE_URL")
 	if connStr == "" {
-		connStr = "postgresql://user:password@localhost:5432/myappdb?sslmode=disable"
+		connStr = "postgresql://user:Prague1993@localhost:5432/myappdb?sslmode=disable"
 	}
 
 	var err error

@@ -1,6 +1,7 @@
 package camera
 
 import (
+	"database/sql"
 	"encoding/csv"
 	"fmt"
 	"os"
@@ -65,4 +66,16 @@ func GetCameraByID(id string, cameras []Camera) (Camera, error) {
 		}
 	}
 	return Camera{}, fmt.Errorf("camera with ID %s not found", id)
+}
+
+func InsertCameras(db *sql.DB, cameras []Camera) error {
+	for _, cam := range cameras {
+		_, err := db.Exec(`INSERT INTO cameras (id, name, latitude, longitude) 
+        VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO NOTHING`,
+			cam.ID, cam.Name, cam.Latitude, cam.Longitude)
+		if err != nil {
+			return fmt.Errorf("failed to insert camera %s: %v", cam.ID, err)
+		}
+	}
+	return nil
 }

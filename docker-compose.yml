@@ -4,8 +4,8 @@ services:
     image: postgres:14
     environment:
       POSTGRES_DB: mydb
-      POSTGRES_USER: -
-      POSTGRES_PASSWORD: -
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Prague1993
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -14,7 +14,7 @@ services:
     depends_on:
       - db
     environment:
-      DATABASE_URL: username://username:password@db:5432/mydb
+      DATABASE_URL: postgres://postgres:Prague1993@db:5432/mydb
     ports:
       - "8080:8080"
 
