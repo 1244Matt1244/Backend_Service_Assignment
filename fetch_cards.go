@@ -1,32 +1,36 @@
+// fetch_cards.go
 package mtg
 
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"my_project/models" // C:/Users/korisnik/Desktop/MTG_Backend_Service_Assignment
 	"net/http"
 )
 
-func FetchCardsFromAPI(url string) error {
+// FetchCardsFromAPI fetches cards from the given API URL and processes them
+func FetchCardsFromAPI(url string) ([]models.Card, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("error fetching data from API: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
 	var result struct {
-		Cards []Card `json:"cards"` // Use the imported Card struct
+		Cards []models.Card `json:"cards"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return err
+		return nil, fmt.Errorf("error decoding JSON response: %v", err)
 	}
 
 	for _, card := range result.Cards {
-		fmt.Printf("Card ID: %s, Name: %s\n", card.ID, card.Name)
+		log.Printf("Card ID: %s, Name: %s", card.ID, card.Name)
 	}
 
-	return nil
+	return result.Cards, nil
 }

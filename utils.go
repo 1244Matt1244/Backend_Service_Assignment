@@ -1,10 +1,10 @@
-// utils.go
-package main
+package utils
 
 import "log"
 
+// CheckError logs the error but does not terminate the program
 func CheckError(err error) {
 	if err != nil {
-		log.Fatalf("An error occurred: %v", err)
+		log.Printf("An error occurred: %v", err)
 	}
 }

@@ -2,46 +2,41 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
+	"math"
+	"my_project/models"
+	"my_project/mtg"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
-	// Import the camera package
 )
 
-// Define Card and Camera structs only if needed in this file
-type Card struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	Type string `json:"type"` // Ensure this field is present
-}
-
-func GetCardByID(id string, cards []Card) (Card, error) {
-	for _, card := range cards {
-		if card.ID == id {
-			return card, nil
-		}
+func main() {
+	// Parse MTG cards and cameras
+	cards, err := mtg.ParseMTGCards("mtg_cards.csv")
+	if err != nil {
+		log.Fatal("Error parsing MTG cards:", err)
 	}
-	return Card{}, fmt.Errorf("card not found")
-}
 
-func GetCameraByID(id string, cameras []Camera) (Camera, error) {
-	for _, camera := range cameras {
-		if camera.ID == id {
-			return camera, nil
-		}
+	cameras, err := mtg.ParseCameras("cameras.csv")
+	if err != nil {
+		log.Fatal("Error parsing cameras:", err)
 	}
-	return Camera{}, fmt.Errorf("camera not found")
+
+	// Setup the router
+	r := SetupRouter(cards, cameras)
+
+	// Start the server
+	log.Println("Server is running on port 8080")
+	err = http.ListenAndServe(":8080", r)
+	if err != nil {
+		log.Fatal("Error starting server:", err)
+	}
 }
 
-func ParseMTGCards(filename string) ([]Card, error) {
-	return []Card{
-		{ID: "1", Name: "Card 1", Type: "Type A"},
-	}, nil
-}
-
-func SetupRouter(cards []Card, cameras []Camera) *mux.Router {
+// SetupRouter sets up routes for MTG cards and cameras
+func SetupRouter(cards []models.Card, cameras []models.Camera) *mux.Router {
 	r := mux.NewRouter()
 
 	// MTG Card Routes
@@ -49,16 +44,13 @@ func SetupRouter(cards []Card, cameras []Camera) *mux.Router {
 		vars := mux.Vars(r)
 		id := vars["id"]
 
-		card, err := GetCardByID(id, cards)
+		card, err := mtg.GetCardByID(id, cards)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(card); err != nil {
-			http.Error(w, "Error encoding JSON", http.StatusInternalServerError)
-		}
+		JSONResponse(w, card, http.StatusOK)
 	}).Methods("GET")
 
 	// Camera Routes
@@ -66,32 +58,74 @@ func SetupRouter(cards []Card, cameras []Camera) *mux.Router {
 		vars := mux.Vars(r)
 		id := vars["id"]
 
-		camera, err := GetCameraByID(id, cameras)
+		camera, err := mtg.GetCameraByID(id, cameras)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(camera); err != nil {
-			http.Error(w, "Error encoding JSON", http.StatusInternalServerError)
+		JSONResponse(w, camera, http.StatusOK)
+	}).Methods("GET")
+
+	// List Cameras with search by location
+	r.HandleFunc("/cameras", func(w http.ResponseWriter, r *http.Request) {
+		latStr := r.URL.Query().Get("latitude")
+		lonStr := r.URL.Query().Get("longitude")
+		radiusStr := r.URL.Query().Get("radius")
+
+		if latStr == "" || lonStr == "" || radiusStr == "" {
+			http.Error(w, "Missing parameters", http.StatusBadRequest)
+			return
 		}
+
+		lat, err := strconv.ParseFloat(latStr, 64)
+		if err != nil {
+			http.Error(w, "Invalid latitude", http.StatusBadRequest)
+			return
+		}
+
+		lon, err := strconv.ParseFloat(lonStr, 64)
+		if err != nil {
+			http.Error(w, "Invalid longitude", http.StatusBadRequest)
+			return
+		}
+
+		radius, err := strconv.ParseFloat(radiusStr, 64)
+		if err != nil {
+			http.Error(w, "Invalid radius", http.StatusBadRequest)
+			return
+		}
+
+		var results []models.Camera
+		for _, camera := range cameras {
+			if calculateDistance(lat, lon, camera.Latitude, camera.Longitude) <= radius {
+				results = append(results, camera)
+			}
+		}
+
+		JSONResponse(w, results, http.StatusOK)
 	}).Methods("GET")
 
 	return r
 }
 
-func main() {
-	cards, err := ParseMTGCards("mtg_cards.csv")
-	if err != nil {
-		log.Fatal(err)
-	}
+// Calculate the distance between two points on the earth (specified in decimal degrees)
+func calculateDistance(lat1, lon1, lat2, lon2 float64) float64 {
+	const R = 6371 // Radius of the Earth in kilometers
+	dLat := (lat2 - lat1) * (3.141592653589793 / 180)
+	dLon := (lon2 - lon1) * (3.141592653589793 / 180)
+	a := math.Sin(dLat/2)*math.Sin(dLat/2) +
+		math.Cos(lat1*(3.141592653589793/180))*math.Cos(lat2*(3.141592653589793/180))*
+			math.Sin(dLon/2)*math.Sin(dLon/2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+	return R * c
+}
 
-	cameras := []Camera{
-		{ID: "1", Latitude: 40.7128, Longitude: -74.0060},
+// JSONResponse sends a JSON response with the given data and status code
+func JSONResponse(w http.ResponseWriter, data interface{}, statusCode int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		http.Error(w, "Error encoding JSON", http.StatusInternalServerError)
 	}
-
-	r := SetupRouter(cards, cameras)
-	http.Handle("/", r)
-	log.Fatal(http.ListenAndServe(":8080", nil))
 }
