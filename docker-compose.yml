@@ -14,9 +14,9 @@ services:
     ports:
       - "5432:5432"  # PostgreSQL on port 5432
     environment:
-      POSTGRES_USER: -
-      POSTGRES_PASSWORD: -
-      POSTGRES_DB: -
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Prague1993
+      POSTGRES_DB: postgres
     networks:
       - my_network
 
