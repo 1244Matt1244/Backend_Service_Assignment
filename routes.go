@@ -1,8 +1,9 @@
 package main
 
 import (
+	"Backend_Service_Assignment/internal/mtg"
+	"Backend_Service_Assignment/internal/models"
 	"log"
-	"mtg"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -20,6 +21,10 @@ func ImportHandler(db *sqlx.DB) http.HandlerFunc {
 		}
 		JSONResponse(w, map[string]string{"status": "import successful"}, http.StatusOK)
 	}
+}
+
+func JSONResponse(w http.ResponseWriter, map[string]string map[string]string, i int) {
+	panic("unimplemented")
 }
 
 // ListHandler handles the list route

@@ -1,9 +1,10 @@
 package mtg
 
 import (
-	"os"
-	"testing"
+    "github.com/1244Matt1244/Backend_Service_Assignment/internal/models"
+    "testing"
 )
+
 
 func TestParseMTGCards(t *testing.T) {
 	// Create a temporary file with sample data for testing

@@ -59,7 +59,7 @@ func ParseCameras(filename string) ([]Camera, error) {
 }
 
 // GetCameraByID retrieves a camera by its ID from a slice of cameras
-func GetCameraByID(id string, cameras []Camera) (Camera, error) {
+func GetCameraByID(id string) (Camera, error) {
 	for _, camera := range cameras {
 		if camera.ID == id {
 			return camera, nil
@@ -68,11 +68,12 @@ func GetCameraByID(id string, cameras []Camera) (Camera, error) {
 	return Camera{}, fmt.Errorf("camera with ID %s not found", id)
 }
 
+// InsertCameras inserts the parsed cameras into the database
 func InsertCameras(db *sql.DB, cameras []Camera) error {
 	for _, cam := range cameras {
-		_, err := db.Exec(`INSERT INTO cameras (id, name, latitude, longitude) 
-        VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO NOTHING`,
-			cam.ID, cam.Name, cam.Latitude, cam.Longitude)
+		_, err := db.Exec(`INSERT INTO cameras (id, latitude, longitude) 
+        VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING`,
+			cam.ID, cam.Latitude, cam.Longitude)
 		if err != nil {
 			return fmt.Errorf("failed to insert camera %s: %v", cam.ID, err)
 		}

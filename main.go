@@ -36,8 +36,9 @@ func main() {
 }
 
 // SetupRouter sets up routes for MTG cards and cameras
-func SetupRouter(cards []models.Go, cameras []models.Go) *mux.Router {
+func SetupRouter(cards []models.MTGCard, cameras []models.Camera) *mux.Router {
 	r := mux.NewRouter()
+
 	// MTG Card Routes
 	r.HandleFunc("/cards/{id}", func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -104,15 +105,14 @@ func SetupRouter(cards []models.Go, cameras []models.Go) *mux.Router {
 
 		JSONResponse(w, map[string]interface{}{
 			"total": len(results),
-			"items": len(results),
-			"cards": results,
+			"items": results,
 		}, http.StatusOK)
 	}).Methods("GET")
 
 	return r
 }
 
-// Calculate the distance between two points on the earth (specified in decimal degrees)
+// calculateDistance calculates the distance between two points on the earth (specified in decimal degrees)
 func calculateDistance(lat1, lon1, lat2, lon2 float64) float64 {
 	const R = 6371 // Radius of the Earth in kilometers
 	dLat := (lat2 - lat1) * (math.Pi / 180)
