@@ -1,0 +1,41 @@
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go module and cache
+/go/pkg/mod/
+*.mod
+*.sum
+
+# Dependency directories
+vendor/
+Godeps/
+
+# IDE and editor-specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Environment variables
+.env
+
+# Docker files (if you don't want to include Docker-related files in version control)
+docker-compose.override.yml
+
+# Binary files and executables
+myapp.exe

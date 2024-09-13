@@ -1,10 +1,10 @@
 package camera
 
 import (
-	"database/sql"
 	"encoding/csv"
 	"fmt"
 	"os"
+	"postgres/sql"
 	"strconv"
 )
 
