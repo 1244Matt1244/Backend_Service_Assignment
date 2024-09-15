@@ -6,6 +6,7 @@
 *.dylib
 *.test
 *.out
+*.a  # Additional Go build artifact
 
 # Go module and cache
 /go/pkg/mod/
@@ -24,6 +25,12 @@ Godeps/
 *.sublime-workspace
 *.sublime-project
 
+# Temporary and backup files
+*.tmp
+*.bak
+*.old
+*.orig
+
 # System files
 .DS_Store
 Thumbs.db
@@ -39,3 +46,12 @@ docker-compose.override.yml
 
 # Binary files and executables
 myapp.exe
+myapp.out
+
+# Test coverage files
+*.coverprofile
+*.cover.out
+
+# Miscellaneous
+*.bak  # Backup files created by editors
+*.tmp  # Temporary files

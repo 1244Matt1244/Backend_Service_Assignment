@@ -1,10 +1,10 @@
 package camera
 
 import (
+	"database/sql"
 	"encoding/csv"
 	"fmt"
 	"os"
-	"postgres/sql"
 	"strconv"
 )
 
@@ -59,7 +59,7 @@ func ParseCameras(filename string) ([]Camera, error) {
 }
 
 // GetCameraByID retrieves a camera by its ID from a slice of cameras
-func GetCameraByID(id string) (Camera, error) {
+func GetCameraByID(id string, cameras []Camera) (Camera, error) {
 	for _, camera := range cameras {
 		if camera.ID == id {
 			return camera, nil

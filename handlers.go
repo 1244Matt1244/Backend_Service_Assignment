@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux" // Added missing Gorilla Mux import
+	"github.com/gorilla/mux"
 )
 
 // ListMTGCardsHandler handles the request to list all MTG cards
@@ -25,8 +25,8 @@ func ListMTGCardsHandler(w http.ResponseWriter, r *http.Request) {
 
 // GetMTGCardHandler handles the request to get a single MTG card by ID
 func GetMTGCardHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r) // Use mux to get variables from URL
-	id := vars["id"]    // Corrected method to extract 'id'
+	vars := mux.Vars(r)
+	id := vars["id"]
 
 	card, err := mtg.GetMTGCardByID(id)
 	if err != nil {
@@ -42,8 +42,13 @@ func GetMTGCardHandler(w http.ResponseWriter, r *http.Request) {
 
 // ImportMTGCardsHandler handles the request to import MTG cards
 func ImportMTGCardsHandler(w http.ResponseWriter, r *http.Request) {
-	// Implement file upload logic or similar import functionality
-	http.Error(w, "Not implemented", http.StatusNotImplemented)
+	apiURL := "https://api.magicthegathering.io/v1/cards"
+	err := mtg.FetchCardsFromAPI(apiURL, mtg.GetDB())
+	if err != nil {
+		http.Error(w, "Failed to import cards", http.StatusInternalServerError)
+		return
+	}
+	JSONResponse(w, map[string]string{"status": "import successful"}, http.StatusOK)
 }
 
 // ListCamerasHandler handles the request to list all cameras
@@ -62,8 +67,8 @@ func ListCamerasHandler(w http.ResponseWriter, r *http.Request) {
 
 // GetCameraByIDHandler handles the request to get a single camera by ID
 func GetCameraByIDHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r) // Use mux to get variables from URL
-	id := vars["id"]    // Corrected method to extract 'id'
+	vars := mux.Vars(r)
+	id := vars["id"]
 
 	camera, err := mtg.GetCameraByID(id)
 	if err != nil {
@@ -77,16 +82,10 @@ func GetCameraByIDHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// AddCameraHandler handles the request to add a new camera
-func AddCameraHandler(w http.ResponseWriter, r *http.Request) {
-	// Implement logic to add a new camera
-	http.Error(w, "Not implemented", http.StatusNotImplemented)
-}
-
 // DeleteCameraHandler handles the request to delete a camera by ID
 func DeleteCameraHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r) // Use mux to get variables from URL
-	id := vars["id"]    // Corrected method to extract 'id'
+	vars := mux.Vars(r)
+	id := vars["id"]
 
 	err := mtg.DeleteCameraByID(id)
 	if err != nil {
@@ -121,7 +120,7 @@ func ListCamerasInRadiusHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cameras, err := mtg.FetchCamerasInRadius(lat, lon, radius) // Assuming mtg has this function
+	cameras, err := mtg.FetchCamerasInRadius(lat, lon, radius)
 	if err != nil {
 		http.Error(w, "Failed to fetch cameras", http.StatusInternalServerError)
 		return
@@ -133,7 +132,7 @@ func ListCamerasInRadiusHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// ListCards handles pagination and filters
+// ListCards handles pagination and filters for MTG cards
 func ListCards(w http.ResponseWriter, r *http.Request) {
 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
 	if err != nil || page <= 0 {
@@ -165,4 +164,13 @@ func isValidColor(color string) bool {
 		"white": true, "black": true, "blue": true, "red": true, "green": true,
 	}
 	return validColors[color]
+}
+
+// JSONResponse is a helper function to send JSON responses
+func JSONResponse(w http.ResponseWriter, data interface{}, statusCode int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		http.Error(w, "Error encoding JSON", http.StatusInternalServerError)
+	}
 }

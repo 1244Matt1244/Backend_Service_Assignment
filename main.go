@@ -1,31 +1,30 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
-	"math"
-	"models"
 	"mtg"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
 )
 
-func main() {
-	// Parse MTG cards and cameras
-	cards, err := mtg.ParseMTGCards("mtg_cards.csv")
-	if err != nil {
-		log.Fatal("Error parsing MTG cards:", err)
-	}
+var db *sql.DB
 
-	cameras, err := mtg.ParseCameras("cameras.csv")
+func main() {
+	// Database connection
+	var err error
+	db, err = mtg.ConnectToDB()
 	if err != nil {
-		log.Fatal("Error parsing cameras:", err)
+		log.Fatal("Error connecting to the database:", err)
 	}
+	defer db.Close()
 
 	// Setup the router
-	r := SetupRouter(cards, cameras)
+	r := SetupRouter()
 
 	// Start the server
 	log.Println("Server is running on port 8080")
@@ -36,92 +35,126 @@ func main() {
 }
 
 // SetupRouter sets up routes for MTG cards and cameras
-func SetupRouter(cards []models.MTGCard, cameras []models.Camera) *mux.Router {
+func SetupRouter() *mux.Router {
 	r := mux.NewRouter()
 
 	// MTG Card Routes
-	r.HandleFunc("/cards/{id}", func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		id := vars["id"]
-
-		card, err := mtg.GetCardByID(id, cards)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-
-		JSONResponse(w, card, http.StatusOK)
-	}).Methods("GET")
+	r.HandleFunc("/cards/{id}", GetMTGCardByID).Methods("GET")
+	r.HandleFunc("/import", ImportMTGCards).Methods("POST")
+	r.HandleFunc("/list", ListMTGCards).Methods("GET")
 
 	// Camera Routes
-	r.HandleFunc("/cameras/{id}", func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		id := vars["id"]
-
-		camera, err := mtg.GetCameraByID(id, cameras)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-
-		JSONResponse(w, camera, http.StatusOK)
-	}).Methods("GET")
-
-	// List Cameras with search by location
-	r.HandleFunc("/cameras", func(w http.ResponseWriter, r *http.Request) {
-		latStr := r.URL.Query().Get("latitude")
-		lonStr := r.URL.Query().Get("longitude")
-		radiusStr := r.URL.Query().Get("radius")
-
-		if latStr == "" || lonStr == "" || radiusStr == "" {
-			http.Error(w, "Missing parameters", http.StatusBadRequest)
-			return
-		}
-
-		lat, err := strconv.ParseFloat(latStr, 64)
-		if err != nil {
-			http.Error(w, "Invalid latitude", http.StatusBadRequest)
-			return
-		}
-
-		lon, err := strconv.ParseFloat(lonStr, 64)
-		if err != nil {
-			http.Error(w, "Invalid longitude", http.StatusBadRequest)
-			return
-		}
-
-		radius, err := strconv.ParseFloat(radiusStr, 64)
-		if err != nil {
-			http.Error(w, "Invalid radius", http.StatusBadRequest)
-			return
-		}
-
-		var results []models.Camera
-		for _, camera := range cameras {
-			if calculateDistance(lat, lon, camera.Latitude, camera.Longitude) <= radius {
-				results = append(results, camera)
-			}
-		}
-
-		JSONResponse(w, map[string]interface{}{
-			"total": len(results),
-			"items": results,
-		}, http.StatusOK)
-	}).Methods("GET")
+	r.HandleFunc("/cameras/{id}", GetCameraByID).Methods("GET")
+	r.HandleFunc("/cameras", ListCamerasByRadius).Methods("GET")
 
 	return r
 }
 
-// calculateDistance calculates the distance between two points on the earth (specified in decimal degrees)
-func calculateDistance(lat1, lon1, lat2, lon2 float64) float64 {
-	const R = 6371 // Radius of the Earth in kilometers
-	dLat := (lat2 - lat1) * (math.Pi / 180)
-	dLon := (lon2 - lon1) * (math.Pi / 180)
-	a := math.Sin(dLat/2)*math.Sin(dLat/2) +
-		math.Cos(lat1*(math.Pi/180))*math.Cos(lat2*(math.Pi/180))*
-			math.Sin(dLon/2)*math.Sin(dLon/2)
-	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
-	return R * c
+// ImportMTGCards imports cards from the MTG API into the database
+func ImportMTGCards(w http.ResponseWriter, r *http.Request) {
+	err := mtg.ImportCardsFromAPI(db)
+	if err != nil {
+		http.Error(w, "Error importing cards", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Cards imported successfully"))
+}
+
+// GetMTGCardByID retrieves an MTG card by its ID from the database
+func GetMTGCardByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	card, err := mtg.GetCardByIDFromDB(db, id)
+	if err != nil {
+		http.Error(w, "Card not found", http.StatusNotFound)
+		return
+	}
+
+	JSONResponse(w, card, http.StatusOK)
+}
+
+// ListMTGCards lists MTG cards with search filters and pagination
+func ListMTGCards(w http.ResponseWriter, r *http.Request) {
+	filters := mtg.CardFilters{
+		Color:  r.URL.Query().Get("color"),
+		Rarity: r.URL.Query().Get("rarity"),
+		Type:   r.URL.Query().Get("type"),
+		Name:   r.URL.Query().Get("name"),
+	}
+
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	cards, total, err := mtg.SearchCards(db, filters, page)
+	if err != nil {
+		http.Error(w, "Error searching cards", http.StatusInternalServerError)
+		return
+	}
+
+	JSONResponse(w, map[string]interface{}{
+		"total": total,
+		"page":  page,
+		"items": cards,
+	}, http.StatusOK)
+}
+
+// GetCameraByID retrieves a camera by its ID
+func GetCameraByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	camera, err := mtg.GetCameraByIDFromDB(db, id)
+	if err != nil {
+		http.Error(w, "Camera not found", http.StatusNotFound)
+		return
+	}
+
+	JSONResponse(w, camera, http.StatusOK)
+}
+
+// ListCamerasByRadius lists cameras within a radius of a given location
+func ListCamerasByRadius(w http.ResponseWriter, r *http.Request) {
+	latStr := r.URL.Query().Get("latitude")
+	lonStr := r.URL.Query().Get("longitude")
+	radiusStr := r.URL.Query().Get("radius")
+
+	if latStr == "" || lonStr == "" || radiusStr == "" {
+		http.Error(w, "Missing parameters", http.StatusBadRequest)
+		return
+	}
+
+	lat, err := strconv.ParseFloat(latStr, 64)
+	if err != nil {
+		http.Error(w, "Invalid latitude", http.StatusBadRequest)
+		return
+	}
+
+	lon, err := strconv.ParseFloat(lonStr, 64)
+	if err != nil {
+		http.Error(w, "Invalid longitude", http.StatusBadRequest)
+		return
+	}
+
+	radius, err := strconv.ParseFloat(radiusStr, 64)
+	if err != nil {
+		http.Error(w, "Invalid radius", http.StatusBadRequest)
+		return
+	}
+
+	cameras, err := mtg.FindCamerasWithinRadius(db, lat, lon, radius)
+	if err != nil {
+		http.Error(w, "Error finding cameras", http.StatusInternalServerError)
+		return
+	}
+
+	JSONResponse(w, map[string]interface{}{
+		"total": len(cameras),
+		"items": cameras,
+	}, http.StatusOK)
 }
 
 // JSONResponse sends a JSON response with the given data and status code
