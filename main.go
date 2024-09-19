@@ -80,7 +80,7 @@ func initLogging() {
 func connectToDB() {
 	var err error
 	log.Println("Connecting to the database...")
-	db, err = sql.Open("postgres", "postgres://postgres:Prague1993@db:5432/mydb?sslmode=disable")
+	db, err = sql.Open("postgres", "postgres://<username>:<password>@<host>:543
 	if err != nil {
 		log.Fatalf("Error connecting to the database: %v", err)
 	}
