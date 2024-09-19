@@ -41,7 +41,7 @@ services:
       redis:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgres://postgres:Prague1993@db:5432/mydb  # Database connection string
+      DATABASE_URL: postgres://<username>:<password>@<host>:5432/<dbname>
       REDIS_URL: redis://redis:6379  # Redis connection string
     ports:
       - "8080:8080"
