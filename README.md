@@ -1,5 +1,3 @@
----
-
 # Backend Service Assignment API
 
 This project implements a backend service that handles both **Magic: The Gathering (MTG) Cards** and **Traffic Cameras**. The API allows for various operations such as retrieving MTG cards, listing them, importing them from an API, as well as working with traffic cameras including querying them by ID and finding cameras within a radius. The backend is built using **Go**, with a **PostgreSQL** database, including **PostGIS** for geographic querying.
@@ -152,5 +150,3 @@ Data for traffic cameras is inserted from a CSV file (`/app/camera/cameras.csv`)
 ## Contributing
 
 Contributions are welcome! Please open issues or submit pull requests for any improvements.
-
----
