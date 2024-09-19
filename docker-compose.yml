@@ -1,0 +1,65 @@
+services:
+  db:
+    image: postgis/postgis:14-3.3  # Use PostgreSQL with PostGIS 3.3
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Prague1993
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./new-postgres-data:/var/lib/postgresql/data  # Persist database data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+    restart: always
+
+  redis:
+    image: redis:alpine  # Redis for caching
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: always
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://postgres:Prague1993@db:5432/mydb  # Database connection string
+      REDIS_URL: redis://redis:6379  # Redis connection string
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./cmd/camera:/app/camera  # Map the local camera directory to /app/camera in the container
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: always
+
+networks:
+  app-network:
+
+volumes:
+  pgdata:
+    driver: local

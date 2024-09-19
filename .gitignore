@@ -1,0 +1,83 @@
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.a  # Additional Go build artifact
+
+# Go module and cache
+/go/pkg/mod/
+/go-build/
+*.mod
+*.sum
+
+# Dependency directories
+vendor/
+Godeps/
+
+# IDE and editor-specific files
+.vscode/
+.idea/
+.idea/workspace.xml
+.idea/modules.xml
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# Temporary and backup files
+*.tmp
+*.bak
+*.old
+*.orig
+
+# System files
+.DS_Store
+Thumbs.db
+*.stackdump
+
+# Log files
+*.log
+
+# Environment variables and secrets
+.env            # Do not commit sensitive environment variables
+.env.local      # Local environment variables
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.backup   # Any environment variable backups
+
+# Security keys and certificates
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.jks
+
+# Docker-related files (to keep Docker overrides and sensitive configs out of VCS)
+docker-compose.override.yml
+Dockerfile.*
+
+# Binary files and executables
+myapp.exe
+myapp.out
+
+# Test coverage files
+*.coverprofile
+*.cover.out
+
+# Miscellaneous
+*.bak  # Backup files created by editors
+*.tmp  # Temporary files
+
+# Lock files (optional - prevent accidental inclusion of lock files from various tools)
+*.lock
+
+# Terraform and Infrastructure-as-Code (if applicable)
+*.tfstate
+*.tfstate.backup
+.terraform/

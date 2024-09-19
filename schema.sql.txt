@@ -1,0 +1,19 @@
+CREATE TABLE IF NOT EXISTS mtg_cards (
+    id TEXT PRIMARY KEY,
+    name TEXT,
+    colors JSONB,
+    cmc NUMERIC,
+    type TEXT,
+    subtype TEXT,
+    rarity TEXT,
+    image_url TEXT,
+    original_text TEXT
+);
+
+CREATE TABLE IF NOT EXISTS cameras (
+    id SERIAL PRIMARY KEY,
+    name TEXT,
+    latitude NUMERIC,
+    longitude NUMERIC
+);
+
