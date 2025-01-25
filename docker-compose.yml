@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgis/postgis:14-3.3  # Use PostgreSQL with PostGIS 3.3
+    image: postgis/postgis:14-3.3
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -8,7 +8,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./new-postgres-data:/var/lib/postgresql/data  # Persist database data
+      - ./new-postgres-data:/var/lib/postgresql/data
     networks:
       - app-network
     healthcheck:
@@ -19,7 +19,7 @@ services:
     restart: always
 
   redis:
-    image: redis:alpine  # Redis for caching
+    image: redis:alpine
     ports:
       - "6379:6379"
     networks:
@@ -41,12 +41,12 @@ services:
       redis:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgres://<username>:<password>@<host>:5432/<dbname>
-      REDIS_URL: redis://redis:6379  # Redis connection string
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379
     ports:
       - "8080:8080"
     volumes:
-      - ./cmd/camera:/app/camera  # Map the local camera directory to /app/camera in the container
+      - ./cmd/camera:/app/camera
     networks:
       - app-network
     healthcheck:
