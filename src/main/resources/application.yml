@@ -1,0 +1,27 @@
+resilience4j:
+  circuitbreaker:
+    instances:
+      orderService:
+        register-health-indicator: true
+  retry:
+    instances:
+      orderService:
+        max-retry-attempts: 3
+
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+opentelemetry:
+  instrumentation:
+    methods:
+      com.yourcompany.service.*: true
