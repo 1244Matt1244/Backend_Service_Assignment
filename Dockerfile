@@ -1,5 +1,7 @@
 # Build stage
-FROM golang:1.20-bullseye AS builder
+FROM golang:1.20 AS builder
+...
+CMD ["./main"]
 WORKDIR /app
 
 # Install tools (combined layers for efficiency)
