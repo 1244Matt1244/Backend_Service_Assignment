@@ -1,5 +1,8 @@
-# Build stage for Go application
+# Critical Docker Conflict - Remove Go parts
+# Remove these conflicting lines:
 FROM golang:1.20 AS builder
+...
+CMD ["./main"]
 
 # Set working directory
 WORKDIR /app
