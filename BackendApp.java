@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @SpringBootApplication
-public class SeniorLevelBackendApp {
+public class LevelBackendApp {
     public static void main(String[] args) {
         SpringApplication.run(SeniorLevelBackendApp.class, args);
     }
