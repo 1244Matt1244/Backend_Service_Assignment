@@ -1,8 +1,5 @@
-# Critical Docker Conflict - Remove Go parts
-# Remove these conflicting lines:
-FROM golang:1.20 AS builder
-...
-CMD ["./main"]
+# Stage 1: Go Application Build Stage
+FROM golang:1.20 AS go-builder
 
 # Set working directory
 WORKDIR /app
@@ -15,7 +12,7 @@ RUN apt-get update && \
 # Install Swag CLI tool with version pinning to generate Swagger docs
 RUN go install github.com/swaggo/swag/cmd/swag@v1.8.12
 
-# Copy dependency files first to leverage caching
+# Copy Go dependency files first to leverage caching
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify
 
@@ -30,21 +27,35 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     go build -ldflags="-w -s -X main.version=1.0.0" \
     -o /app/main ./cmd/main.go
 
-# Final runtime image
-FROM scratch
+# Stage 2: Java Application Build Stage
+FROM maven:3.8.6-eclipse-temurin-17 AS java-builder
+
+# Set working directory for the Java application
+WORKDIR /app
+
+# Copy Maven dependency files and install dependencies offline
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# Copy the Java source code
+COPY src ./src
+RUN mvn package -DskipTests
+
+# Stage 3: Final Runtime Image for Go and Java
+FROM eclipse-temurin:17-jre-jammy AS runtime
 
 # Set working directory for the runtime
-WORKDIR /
+WORKDIR /app
 
-# Import certificates and timezone data for a secure runtime environment
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+# Copy the Go application and Swagger docs from the Go build stage
+COPY --from=go-builder --chown=1000:1000 /app/main .
+COPY --from=go-builder /app/docs ./docs/
 
-# Copy the built application and Swagger docs to the runtime image
-COPY --from=builder --chown=1000:1000 /app/main . 
-COPY --from=builder /app/docs ./docs/
+# Copy the Java application JAR and necessary files from the Java build stage
+COPY --from=java-builder /app/target/*.jar app.jar
+COPY --from=java-builder /app/src/main/resources/opentelemetry-javaagent.jar .
 
-# Expose the application's port
+# Expose ports for both Go and Java applications
 EXPOSE 8080
 
 # Set environment variables (including time zone)
@@ -54,5 +65,5 @@ ENV TZ=UTC \
 # Set non-root user for security
 USER 1000:1000
 
-# Define entrypoint for the Go application
-ENTRYPOINT ["./main"]
+# Define entrypoint to run both applications as needed
+ENTRYPOINT ["sh", "-c", "java -javaagent:opentelemetry-javaagent.jar -jar app.jar & ./main"]
