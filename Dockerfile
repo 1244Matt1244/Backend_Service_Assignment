@@ -1,42 +1,47 @@
 # Build stage
-FROM golang:1.20 AS builder
+FROM golang:1.20-bullseye AS builder
 WORKDIR /app
 
-# Install necessary tools
-RUN apt-get update && apt-get install -y git
+# Install tools (combined layers for efficiency)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install swag for generating Swagger documentation
-RUN go install github.com/swaggo/swag/cmd/swag@latest
+# Install swag with version pinning
+RUN go install github.com/swaggo/swag/cmd/swag@v1.8.12
 
-# Copy go.mod and go.sum first to leverage Docker cache and download dependencies
+# Copy dependency files first
 COPY go.mod go.sum ./
-RUN go mod download
+RUN go mod download && go mod verify
 
-# Copy the entire project source code
+# Copy source code
 COPY . .
 
-# Generate Swagger documentation
-RUN swag init --dir ./cmd --output ./docs
+# Generate Swagger docs (ensure source is copied first)
+RUN swag init --dir ./cmd --output ./docs --parseDependency --parseInternal
 
-# Build the Go app targeting the correct Go file in the cmd directory
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main ./cmd/main.go
+# Build application with optimizations
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -ldflags="-w -s -X main.version=1.0.0" \
+    -o /app/main ./cmd/main.go
 
-# Final stage: Use a minimal image to run the application
-FROM alpine:3.16
-WORKDIR /root/
+# Final stage (using scratch for minimal size)
+FROM scratch
+WORKDIR /
 
-# Add CA certificates to enable SSL connections from the application
-RUN apk --no-cache add ca-certificates
+# Import certificates and timezone data
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 
-# Ensure the docs directory exists before copying files into it
-RUN mkdir -p ./docs
-
-# Copy the compiled binary and Swagger documentation from the build stage
-COPY --from=builder /app/main . 
+# Copy application and docs
+COPY --from=builder --chown=1000:1000 /app/main .
 COPY --from=builder /app/docs ./docs/
 
-# Expose port 8080 for the application
+# Metadata
 EXPOSE 8080
+ENV TZ=UTC \
+    GODEBUG=netdns=go
+USER 1000:1000
 
-# Run the compiled Go binary
-CMD ["./main"]
+# Entrypoint
+ENTRYPOINT ["./main"]
