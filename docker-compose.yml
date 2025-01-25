@@ -2,8 +2,8 @@ services:
   db:
     image: postgis/postgis:14-3.3  # Use PostgreSQL with PostGIS 3.3
     environment:
-      POSTGRES_USER: $USERNAME
-      POSTGRES_PASSWORD: $PASSWORD
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
