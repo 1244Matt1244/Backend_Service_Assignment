@@ -1,25 +1,25 @@
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+@EnableMethodSecurity
+public class SecurityConfig {
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http
-            .csrf().disable()
-            .authorizeRequests()
-                .antMatchers("/api/public/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/orders/**").hasAuthority("SCOPE_orders:read")
-                .antMatchers(HttpMethod.POST, "/api/orders").hasAuthority("SCOPE_orders:write")
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        return http
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/public/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/orders").hasRole("ADMIN")
                 .anyRequest().authenticated()
-            .and()
-            .oauth2ResourceServer()
-                .jwt()
-                .jwtAuthenticationConverter(jwtAuthenticationConverter());
+            )
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter()))
+            )
+            .csrf(AbstractHttpConfigurer::disable)
+            .build();
     }
 
-    private Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthenticationConverter() {
+    private Converter<Jwt, AbstractAuthenticationToken> jwtAuthConverter() {
         JwtGrantedAuthoritiesConverter converter = new JwtGrantedAuthoritiesConverter();
-        converter.setAuthorityPrefix("SCOPE_");
+        converter.setAuthorityPrefix("");
         return new JwtAuthenticationConverter(converter);
     }
 }
