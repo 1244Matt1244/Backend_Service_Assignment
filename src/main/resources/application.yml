@@ -9,9 +9,6 @@ resilience4j:
         max-retry-attempts: 3
 
 management:
-  endpoint:
-    health:
-      show-details: always
   endpoints:
     web:
       exposure:
@@ -20,8 +17,11 @@ management:
     export:
       prometheus:
         enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
 
 opentelemetry:
   instrumentation:
     methods:
-      com.yourcompany.service.*: true
+      com.example.service.*: true
